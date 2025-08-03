@@ -12,4 +12,5 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **Architecture**: Process model, shared memory, and storage layout
 - **[Connection Architecture](postgres/connection.md)**: Client/server model, process forking, and socket management
 - **[Process Architecture](postgres/process.md)**: Multi-process model, background processes, and monitoring
+- **[Engine Architecture](postgres/postgres-engine.md)**: Core engine components, query processing, storage, and MVCC internals
 
