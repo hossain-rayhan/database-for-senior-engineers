@@ -19,9 +19,12 @@ Suppose you have two sentences:
 
 
 
+
 An AI model might generate these embeddings:
 • "Mountains are beautiful in the fall.": [0.12, -0.98, 0.33, 0.44]
 • "The ocean looks great in the spring.": [0.10, -0.95, 0.30, 0.40]
+• "City lights shine at night.": [0.15, -0.90, 0.28, 0.38]
+• "Desert sunsets are breathtaking.": [0.11, -0.97, 0.31, 0.41]
 
 In PostgreSQL (with the pgvector extension):
 ```sql
@@ -30,6 +33,8 @@ CREATE TABLE documents (
   content text,
   embedding vector(4)
 );
+
+
 INSERT INTO documents (content, embedding)
 VALUES ('Mountains are beautiful in the fall.', '[0.12, -0.98, 0.33, 0.44]');
 ```
@@ -106,3 +111,215 @@ A vector database enables you to store and search embeddings efficiently, poweri
 ---
 
 *This guide is for beginners looking to understand the basics of vector databases and their role in AI and LLM workloads.*
+
+---
+
+
+# PostgreSQL Vector Database with pgvector Extension
+
+This section provides a step-by-step tutorial for setting up and using PostgreSQL with the pgvector extension, including Docker instructions for convenience.
+
+## Step 1: Run PostgreSQL with pgvector Using Docker
+
+You can use the official Docker image that includes both PostgreSQL and pgvector:
+
+```bash
+docker run -d \
+  --name pgvector-demo \
+  -e POSTGRES_PASSWORD=yourpassword \
+  -p 5432:5432 \
+  ankane/pgvector
+```
+Run `docker ps` to verify the containe is running: 
+```
+rhossain@rayhanmsft:~/wsl_workspace/database-for-senior-engineers$ docker ps
+CONTAINER ID   IMAGE                               COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+87835c7caac6   ankane/pgvector                     "docker-entrypoint.s…"   9 seconds ago   Up 7 seconds   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp   pgvector-demo
+```
+
+## Step 2: Connect to PostgreSQL
+
+Use `psql` or any PostgreSQL client. It will ask for Postgres password. Enter the password you used in the previous command.
+
+```bash
+psql -h localhost -U postgres
+```
+
+## Step 3: Enable the pgvector Extension
+
+In your database, run:
+
+```sql
+CREATE EXTENSION vector;
+```
+
+## Step 4: Create a Table for Embeddings
+
+Choose the vector dimension based on your embedding model (e.g., 1536 for OpenAI Ada):
+
+Model dimension refers to the length of the vector (embedding) produced by an AI model for each input. For example, if a model outputs a vector like [0.12, -0.98, 0.33, ...] with 1536 numbers, its dimension is 1536.
+
+Different models have different dimensions (e.g., OpenAI Ada: 1536, BERT: 768).
+The dimension determines how much information the embedding can capture.
+When creating a table in PostgreSQL with pgvector, you must specify the dimension to match your model’s output.
+
+The vector dimension in your table must match the dimension of the embeddings produced by your model. For BERT, you should use vector(768); for OpenAI Ada, use vector(1536); and so on. Mixing dimensions is not supported in a single vector column.
+
+```sql
+CREATE TABLE documents (
+  id serial PRIMARY KEY,
+  content text,
+  embedding vector(1536)
+);
+```
+
+Verify the table is created with all the fields: `postgres=# \d+ documents`.
+
+
+
+## Step 5: Generate Embeddings
+
+You can generate embeddings using either OpenAI's API or Azure OpenAI Service. Follow the steps below based on your setup.
+
+### Option 1: Using OpenAI API
+
+An API key is a unique code that allows you to access OpenAI's services and track your usage.
+
+**How to get an OpenAI API key for free:**
+1. Go to https://platform.openai.com/signup and create a free account.
+2. After signing up, visit https://platform.openai.com/api-keys.
+3. Click "Create new secret key" and copy the generated key.
+4. You can use this key in your code to access OpenAI's API. Note: Free accounts have limited usage credits.
+
+Use Python or another language to generate embeddings for your text. Example using OpenAI:
+
+```python
+import openai
+openai.api_key = "YOUR_OPENAI_API_KEY"  # Replace with your actual key
+
+text = "Mountains are beautiful in the fall."
+response = openai.embeddings.create(
+   input=[text],
+   model="text-embedding-ada-002"
+)
+embedding = response.data[0].embedding
+print(embedding)
+```
+
+### Option 2: Using Azure OpenAI Service
+
+If you have access to Azure (e.g., via a Microsoft employee subscription), you can use Azure OpenAI Service to generate embeddings. Here are the steps:
+
+**1. Create Azure OpenAI Resource:**
+  - Go to https://portal.azure.com and log in.
+  - Search for "Azure OpenAI" and create a new resource in your subscription and resource group.
+
+**2. Check and Create Model Deployments:**
+  - List your resources:
+    ```bash
+    az cognitiveservices account list
+    ```
+  - Create a deployment (example for Ada embedding model):
+    ```bash
+    az cognitiveservices account deployment create \
+     --name <your-resource-name> \
+     --resource-group <your-resource-group> \
+     --deployment-name ada-embedding-deployment \
+     --model-name text-embedding-ada-002 \
+     --model-version 2 \
+     --model-format OpenAI \
+     --sku Standard \
+     --capacity 1
+    ```
+
+**3. Check Azure AI Foundry (AI Studio):**
+  - From the Azure Portal, find your OpenAI resource and look for a link to "Azure AI Foundry" or "AI Studio".
+  - This webpage provides a user-friendly interface to view and manage deployments, keys, and endpoints.
+
+**4. Get Endpoint and Key:**
+  - In Azure AI Foundry or your resource's "Keys and Endpoint" section, copy your endpoint URL and API key.
+
+**5. Generate Embeddings with Python:**
+  - Use the following Python code, replacing placeholders with your actual values:
+  ```python
+  import openai
+
+  openai.api_type = "azure"
+  openai.api_key = "YOUR_AZURE_OPENAI_KEY"  # Replace with your actual key
+  openai.azure_endpoint = "https://YOUR_RESOURCE_NAME.openai.azure.com/"  # Replace with your endpoint
+  openai.api_version = "2023-05-15"  # Use the version shown in your Azure resource
+
+  text = "Mountains are beautiful in the fall."
+  response = openai.embeddings.create(
+     input=[text],
+     model="YOUR_DEPLOYMENT_NAME"  # Replace with your deployment name
+  )
+  embedding = response.data[0].embedding
+  print(embedding)
+  ```
+
+This will print a large array of numbers (the embedding) for your input text, which you can then store in your vector database.
+
+## Step 6: Insert Embeddings into PostgreSQL
+
+Insert your text and its embedding:
+
+```sql
+INSERT INTO documents (content, embedding)
+VALUES ('Mountains are beautiful in the fall.', '[0.12, -0.98, 0.33, ...]');
+```
+
+```sql
+INSERT INTO documents (content, embedding)
+VALUES ('The ocean looks great in the spring.', '[0.10, -0.95, 0.30, 0.40]');
+```
+
+```sql
+INSERT INTO documents (content, embedding)
+VALUES ('City lights shine at night.', '[0.15, -0.90, 0.28, 0.38]');
+```
+
+```sql
+INSERT INTO documents (content, embedding)
+VALUES ('Desert sunsets are breathtaking.', '[0.11, -0.97, 0.31, 0.41]');
+```
+
+Verify data was inserted: 
+```
+postgres=# SELECT COUNT(*) FROM documents;
+ count
+-------
+     4
+(1 row)
+```
+
+
+## Step 7: Perform a Similarity Search
+
+To find the most similar documents, you first need to generate an embedding for your query sentence using the same model as before.
+
+**Example query sentence:**
+"Where can I see beautiful landscapes?"
+
+**Use the embedding in SQL:**
+Copy the output array and use it in your similarity search:
+```sql
+SELECT id, content
+FROM documents
+ORDER BY embedding <-> '[paste your query embedding array here]'
+LIMIT 5;
+```
+
+This will return the documents most similar to your query sentence, ranked by vector similarity.
+
+```
+ id |               content
+----+--------------------------------------
+  1 | Mountains are beautiful in the fall.
+  4 | Desert sunsets are breathtaking.
+  2 | The ocean looks great in the spring.
+  3 | City lights shine at night.
+(4 rows)
+```
+
+
