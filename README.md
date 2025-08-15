@@ -15,6 +15,10 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **[Engine Architecture](postgres/postgres-engine.md)**: Core engine components, query processing, storage, and MVCC internals
 - **[Storage Internals](postgres/storage-internals.md)**: Physical storage, page structure, tuple format, and space management
 
+
 ### Database on Kubernetes
 - **[Leader Election and Failover with K8s](data-on-k8s/leader_election_and_failover_with_k8s.md)**: Patterns and best practices for high availability
+
+### AI and Database
+- **[Vector Databases: A Beginner’s Guide](ai_and_data/vector_database.md)**: Introduction to vector databases, their role in AI/LLM workloads, and practical examples
 
