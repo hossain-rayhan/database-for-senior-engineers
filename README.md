@@ -13,4 +13,8 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **[Connection Architecture](postgres/connection.md)**: Client/server model, process forking, and socket management
 - **[Process Architecture](postgres/process.md)**: Multi-process model, background processes, and monitoring
 - **[Engine Architecture](postgres/postgres-engine.md)**: Core engine components, query processing, storage, and MVCC internals
+- **[Storage Internals](postgres/storage-internals.md)**: Physical storage, page structure, tuple format, and space management
+
+### Database on Kubernetes
+- **[Leader Election and Failover with K8s](data-on-k8s/leader_election_and_failover_with_k8s.md)**: Patterns and best practices for high availability
 
