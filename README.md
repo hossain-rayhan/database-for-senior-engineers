@@ -14,6 +14,7 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **[Process Architecture](postgres/process.md)**: Multi-process model, background processes, and monitoring
 - **[Engine Architecture](postgres/postgres-engine.md)**: Core engine components, query processing, storage, and MVCC internals
 - **[Storage Internals](postgres/storage-internals.md)**: Physical storage, page structure, tuple format, and space management
+- **[Write-Ahead Logging (WAL) Deep Dive](postgres/wal.md)**: WAL record structure, LSNs, checkpoints, replication & hands-on inspection
 
 
 ### Database on Kubernetes
