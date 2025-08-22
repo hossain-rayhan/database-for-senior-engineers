@@ -16,6 +16,7 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **[Storage Internals](postgres/storage-internals.md)**: Physical storage, page structure, tuple format, and space management
 - **[Write-Ahead Logging (WAL) Deep Dive](postgres/wal.md)**: WAL record structure, LSNs, checkpoints, replication & hands-on inspection
 - **[VACUUM & ANALYZE (Autovacuum, Space Reuse, Planner Stats)](postgres/vacuum_and_analyze.md)**: Dead tuple lifecycle, XID wraparound prevention, statistics maintenance, hands-on lab
+- **[Indexes (Design, Types, Practical Labs)](postgres/index.md)**: B-Tree fundamentals, specialized index types (GIN/GiST/BRIN/etc.), design trade-offs, and hands-on recipes
 
 
 ### Database on Kubernetes
