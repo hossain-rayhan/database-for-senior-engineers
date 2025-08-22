@@ -15,6 +15,7 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **[Engine Architecture](postgres/postgres-engine.md)**: Core engine components, query processing, storage, and MVCC internals
 - **[Storage Internals](postgres/storage-internals.md)**: Physical storage, page structure, tuple format, and space management
 - **[Write-Ahead Logging (WAL) Deep Dive](postgres/wal.md)**: WAL record structure, LSNs, checkpoints, replication & hands-on inspection
+- **[VACUUM & ANALYZE (Autovacuum, Space Reuse, Planner Stats)](postgres/vacuum_and_analyze.md)**: Dead tuple lifecycle, XID wraparound prevention, statistics maintenance, hands-on lab
 
 
 ### Database on Kubernetes
