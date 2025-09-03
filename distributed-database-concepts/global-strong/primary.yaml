@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-primary
+  labels:
+    app: pg-primary
+  namespace: pg
+spec:
+  type: LoadBalancer
+  selector:
+    app: pg-primary
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-primary
+  labels:
+    app: pg-primary
+  namespace: pg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-primary
+  template:
+    metadata:
+      labels:
+        app: pg-primary
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-secrets
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: scram-sha-256
+        ports:
+        - containerPort: 5432
+        args:
+          - -c
+          - wal_level=replica
+          - -c
+          - max_wal_senders=10
+          - -c
+          - max_replication_slots=10
+          - -c
+          - synchronous_commit=on
+          - -c
+          - shared_buffers=256MB
+          - -c
+          - max_connections=200
+          - -c
+          - listen_addresses=*
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: data
+        emptyDir: {}
