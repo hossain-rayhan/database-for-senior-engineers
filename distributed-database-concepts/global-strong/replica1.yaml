@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-replica1
+  labels:
+    app: pg-replica1
+  namespace: pg
+spec:
+  type: LoadBalancer
+  selector:
+    app: pg-replica1
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-replica1
+  labels:
+    app: pg-replica1
+  namespace: pg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-replica1
+  template:
+    metadata:
+      labels:
+        app: pg-replica1
+    spec:
+      initContainers:
+      - name: basebackup
+        image: postgres:16
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-secrets
+              key: REPL_PASSWORD
+        - name: REPL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-secrets
+              key: REPL_PASSWORD
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        command:
+        - bash
+        - -ceu
+        - |
+          if [ -s /var/lib/postgresql/data/PG_VERSION ]; then
+            echo "Data dir already initialized"; exit 0; fi
+          pg_basebackup -h 9.169.235.179 -U repl -D /var/lib/postgresql/data -R -C -S replica1 -Fp -Xs -P
+          echo "primary_conninfo = 'host=9.169.235.179 user=repl password=${REPL_PASSWORD} application_name=replica1'" >> /var/lib/postgresql/data/postgresql.auto.conf
+      containers:
+      - name: postgres
+        image: postgres:16
+        ports:
+        - containerPort: 5432
+        args:
+          - -c
+          - wal_level=replica
+          - -c
+          - max_wal_senders=10
+          - -c
+          - max_replication_slots=10
+          - -c
+          - synchronous_commit=on
+          - -c
+          - shared_buffers=256MB
+          - -c
+          - max_connections=200
+          - -c
+          - listen_addresses=*
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: data
+        emptyDir: {}
