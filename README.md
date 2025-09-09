@@ -19,6 +19,7 @@ This repository serves as a knowledge base for senior engineers diving into data
 - **[Indexes (Design, Types, Practical Labs)](postgres/index.md)**: B-Tree fundamentals, specialized index types (GIN/GiST/BRIN/etc.), design trade-offs, and hands-on recipes
 
 ### Distributed Database Concepts
+- **[Stateful vs Stateless Application Scaling](distributed-database-concepts/stateful_vs_stateless_scaling.md)**: Why databases can't scale like Lambda, PostgreSQL over-provisioning challenges, DynamoDB elastic scaling, and Aurora Serverless solutions
 - **[Global Strong Consistency with PostgreSQL](distributed-database-concepts/global-strong/global_strong.md)**: Synchronous replication, zero data loss guarantees, and practical Kubernetes deployment
 
 ### Database on Kubernetes
